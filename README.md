@@ -1,0 +1,1 @@
+https://docs.sqlc.dev/en/latest/overview/install.html
