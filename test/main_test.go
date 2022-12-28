@@ -14,13 +14,14 @@ const dbDriver = "postgres"
 const dbSource = "postgres://postgres:12345678@project-db.cnoos3wsb1s6.ap-northeast-1.rds.amazonaws.com/appdb"
 
 var dbQueries *db.Queries
-
+var dbInstance *sql.DB
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	var err error
+	dbInstance, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("Cannot connect to database: ", err.Error())
 		return
 	}
-	dbQueries = db.New(conn)
+	dbQueries = db.New(dbInstance)
 	os.Exit(m.Run())
 }

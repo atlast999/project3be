@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const addToCollection = `-- name: AddToCollection :exec
@@ -53,19 +52,19 @@ func (q *Queries) CreateWebApp(ctx context.Context, arg CreateWebAppParams) (Web
 
 const getByCollection = `-- name: GetByCollection :many
 SELECT id, name, url, image, collection_id FROM web_apps
-WHERE collection_id = $1
-OFFSET $2
-LIMIT $3
+WHERE collection_id = $3::int
+OFFSET $1
+LIMIT $2
 `
 
 type GetByCollectionParams struct {
-	CollectionID sql.NullInt32
 	Offset       int32
 	Limit        int32
+	CollectionID int32
 }
 
 func (q *Queries) GetByCollection(ctx context.Context, arg GetByCollectionParams) ([]WebApp, error) {
-	rows, err := q.db.QueryContext(ctx, getByCollection, arg.CollectionID, arg.Offset, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, getByCollection, arg.Offset, arg.Limit, arg.CollectionID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,4 +90,25 @@ func (q *Queries) GetByCollection(ctx context.Context, arg GetByCollectionParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const takeCollection = `-- name: TakeCollection :exec
+WITH new_app_ids AS (
+    INSERT INTO web_apps (name, url, image)
+    SELECT name, url, image FROM web_apps
+    WHERE collection_id = $2::int
+    RETURNING id
+)
+INSERT INTO my_lists (user_id, app_id)
+SELECT $1::int, id FROM new_app_ids
+`
+
+type TakeCollectionParams struct {
+	UserID       int32
+	CollectionID int32
+}
+
+func (q *Queries) TakeCollection(ctx context.Context, arg TakeCollectionParams) error {
+	_, err := q.db.ExecContext(ctx, takeCollection, arg.UserID, arg.CollectionID)
+	return err
 }

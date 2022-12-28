@@ -8,3 +8,7 @@ LIMIT $3;
 -- name: AddMyList :exec
 INSERT INTO my_lists (user_id, app_id)
 VALUES ($1, $2);
+
+-- name: RemoveMyList :exec
+DELETE FROM my_lists
+WHERE user_id = $1;

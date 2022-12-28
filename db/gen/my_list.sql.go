@@ -66,3 +66,13 @@ func (q *Queries) GetMyList(ctx context.Context, arg GetMyListParams) ([]WebApp,
 	}
 	return items, nil
 }
+
+const removeMyList = `-- name: RemoveMyList :exec
+DELETE FROM my_lists
+WHERE user_id = $1
+`
+
+func (q *Queries) RemoveMyList(ctx context.Context, userID int32) error {
+	_, err := q.db.ExecContext(ctx, removeMyList, userID)
+	return err
+}

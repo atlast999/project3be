@@ -27,19 +27,19 @@ func (q *Queries) CreateCollection(ctx context.Context, arg CreateCollectionPara
 	return i, err
 }
 
-const getAllCollections = `-- name: GetAllCollections :many
+const getCollections = `-- name: GetCollections :many
 SELECT id, name, owner_id FROM collections
 OFFSET $1
 LIMIT $2
 `
 
-type GetAllCollectionsParams struct {
+type GetCollectionsParams struct {
 	Offset int32
 	Limit  int32
 }
 
-func (q *Queries) GetAllCollections(ctx context.Context, arg GetAllCollectionsParams) ([]Collection, error) {
-	rows, err := q.db.QueryContext(ctx, getAllCollections, arg.Offset, arg.Limit)
+func (q *Queries) GetCollections(ctx context.Context, arg GetCollectionsParams) ([]Collection, error) {
+	rows, err := q.db.QueryContext(ctx, getCollections, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
