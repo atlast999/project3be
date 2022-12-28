@@ -1,0 +1,38 @@
+
+
+Table "users" {
+  "id" INT [pk, increment]
+  "username" varchar [not null]
+  "password" varchar [not null]
+}
+
+Table "collections" {
+  "id" INT [pk, increment]
+  "name" varchar [not null]
+  "owner_id" int [not null, ref: > users.id]
+
+  Indexes {
+    owner_id
+  }
+}
+
+Table "web_apps" {
+  "id" INT [pk, increment]
+  "name" varchar [not null]
+  "url" varchar [not null]
+  "image" varchar [not null]
+  "collection_id" int [ref: > collections.id]
+
+  Indexes {
+    collection_id
+  }
+}
+
+Table "my_lists" {
+  "user_id" int [ref: > users.id]
+  "app_id" int [ref: - web_apps.id]
+
+  Indexes {
+    user_id
+  }
+}
