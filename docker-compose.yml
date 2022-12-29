@@ -10,6 +10,15 @@ services:
     image: golang:1.18-alpine
     ports:
       - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    volumes:
+      - /home/ec2-user/actions-runner/_work/project3be/project3be:/app
+    working_dir: /app
+    command:
+      - /bin/sh
+      - -c
+      - |
+        go build -o main .
+        ./main
     restart: unless-stopped
     networks: # Networks to join (Services on the same network can communicate with each other using their name)
       - backend
