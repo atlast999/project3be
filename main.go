@@ -11,7 +11,7 @@ func main() {
 	server.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusOK, gin.H{
-				"message": "pong",
+				"message": "pong2",
 			})
 	})
 	server.Run()
