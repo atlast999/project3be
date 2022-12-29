@@ -28,5 +28,5 @@ jobs:
 
     - name: Deploy
       run: |
-        pwd
-        ls
+        docker-compose down
+        docker-compose up
