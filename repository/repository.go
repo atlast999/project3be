@@ -8,43 +8,25 @@ import (
 	"github.com/atlast999/project3be/db/transaction"
 )
 
-func CreateUser(username, password string, queries *db.Queries) (db.User, error) {
-	return queries.CreateUser(context.Background(), db.CreateUserParams{
-		Username: username,
-		Password: password,
-	})
+func CreateUser(params db.CreateUserParams, txInstance *transaction.TxInstance) (db.User, error) {
+	return txInstance.Queries.CreateUser(context.Background(), params)
 }
 
-func GetUser(username, password string, queries *db.Queries) (db.User, error) {
-	return queries.GetUser(context.Background(), db.GetUserParams{
-		Username: username,
-		Password: password,
-	})
+func GetUser(params db.GetUserParams, txInstance *transaction.TxInstance) (db.User, error) {
+	return txInstance.Queries.GetUser(context.Background(), params)
 }
 
-type WebAppParams struct {
-	UserID int
-	Name string
-	Url string
-	Image string
-}
-
-func CreateWebApp(param WebAppParams, dbInstance *sql.DB) (db.WebApp, error) {
-	txInstance := transaction.NewTxInstance(dbInstance)
+func CreateWebApp(userId int, params db.CreateWebAppParams, txInstance *transaction.TxInstance) (db.WebApp, error) {
 	var webApp db.WebApp
 	txErr := txInstance.ExecTransaction(context.Background(), func(queries *db.Queries) error {
 		var err error
-		webApp, err = queries.CreateWebApp(context.Background(), db.CreateWebAppParams{
-			Name: param.Name,
-			Url: param.Url,
-			Image: param.Image,
-		})
+		webApp, err = queries.CreateWebApp(context.Background(), params)
 		if err != nil {
 			return err
 		}
 		err = queries.AddMyList(context.Background(), db.AddMyListParams{
-			UserID: int32(param.UserID),
-			AppID: webApp.ID,
+			UserID: int32(userId),
+			AppID:  webApp.ID,
 		})
 		return err
 	})
@@ -55,7 +37,7 @@ func GetMyList(userID int, queries *db.Queries) ([]db.WebApp, error) {
 	return queries.GetMyList(context.Background(), db.GetMyListParams{
 		UserID: int32(userID),
 		Offset: 0,
-		Limit: 10,
+		Limit:  10,
 	})
 }
 
@@ -65,14 +47,14 @@ func ShareMyList(userID int, collectionName string, dbInstance *sql.DB) (db.Coll
 	txErr := txInstance.ExecTransaction(context.Background(), func(queries *db.Queries) error {
 		var err error
 		collection, err = queries.CreateCollection(context.Background(), db.CreateCollectionParams{
-			Name: collectionName,
+			Name:    collectionName,
 			OwnerID: int32(userID),
 		})
 		if err != nil {
 			return err
 		}
 		err = queries.AddToCollection(context.Background(), db.AddToCollectionParams{
-			UserID: int32(userID),
+			UserID:       int32(userID),
 			CollectionID: collection.ID,
 		})
 		return err
@@ -83,15 +65,15 @@ func ShareMyList(userID int, collectionName string, dbInstance *sql.DB) (db.Coll
 func GetCollections(queries *db.Queries) ([]db.Collection, error) {
 	return queries.GetCollections(context.Background(), db.GetCollectionsParams{
 		Offset: 0,
-		Limit: 10,
+		Limit:  10,
 	})
 }
 
 func GetCollectionDetail(collectionId int, queries *db.Queries) ([]db.WebApp, error) {
 	return queries.GetByCollection(context.Background(), db.GetByCollectionParams{
 		CollectionID: int32(collectionId),
-		Offset: 0,
-		Limit: 10,
+		Offset:       0,
+		Limit:        10,
 	})
 }
 
@@ -103,7 +85,7 @@ func TakeCollection(userId, collectionId int, dbInstance *sql.DB) error {
 			return err
 		}
 		return queries.TakeCollection(context.Background(), db.TakeCollectionParams{
-			UserID: int32(userId),
+			UserID:       int32(userId),
 			CollectionID: int32(collectionId),
 		})
 	})
