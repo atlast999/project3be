@@ -8,7 +8,6 @@ on:
     branches: [ "master" ]
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -21,3 +20,12 @@ jobs:
 
     - name: Test
       run: go test -v -cover ./test/
+  build:
+    runs-on: pj3_be_server
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Deploy
+      run: |
+        docker-compose down
+        docker-compose up -d
