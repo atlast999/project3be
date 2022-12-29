@@ -16,8 +16,8 @@ WHERE id IN (SELECT app_id FROM my_lists WHERE user_id = $1)
 `
 
 type AddToCollectionParams struct {
-	UserID       int32
-	CollectionID int32
+	UserID       int32 `json:"user_id"`
+	CollectionID int32 `json:"collection_id"`
 }
 
 func (q *Queries) AddToCollection(ctx context.Context, arg AddToCollectionParams) error {
@@ -32,9 +32,9 @@ RETURNING id, name, url, image, collection_id
 `
 
 type CreateWebAppParams struct {
-	Name  string
-	Url   string
-	Image string
+	Name  string `json:"name"`
+	Url   string `json:"url"`
+	Image string `json:"image"`
 }
 
 func (q *Queries) CreateWebApp(ctx context.Context, arg CreateWebAppParams) (WebApp, error) {
@@ -58,9 +58,9 @@ LIMIT $2
 `
 
 type GetByCollectionParams struct {
-	Offset       int32
-	Limit        int32
-	CollectionID int32
+	Offset       int32 `json:"offset"`
+	Limit        int32 `json:"limit"`
+	CollectionID int32 `json:"collection_id"`
 }
 
 func (q *Queries) GetByCollection(ctx context.Context, arg GetByCollectionParams) ([]WebApp, error) {
@@ -69,7 +69,7 @@ func (q *Queries) GetByCollection(ctx context.Context, arg GetByCollectionParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []WebApp
+	items := []WebApp{}
 	for rows.Next() {
 		var i WebApp
 		if err := rows.Scan(
@@ -104,8 +104,8 @@ SELECT $1::int, id FROM new_app_ids
 `
 
 type TakeCollectionParams struct {
-	UserID       int32
-	CollectionID int32
+	UserID       int32 `json:"user_id"`
+	CollectionID int32 `json:"collection_id"`
 }
 
 func (q *Queries) TakeCollection(ctx context.Context, arg TakeCollectionParams) error {

@@ -16,8 +16,8 @@ RETURNING id, name, owner_id
 `
 
 type CreateCollectionParams struct {
-	Name    string
-	OwnerID int32
+	Name    string `json:"name"`
+	OwnerID int32  `json:"owner_id"`
 }
 
 func (q *Queries) CreateCollection(ctx context.Context, arg CreateCollectionParams) (Collection, error) {
@@ -34,8 +34,8 @@ LIMIT $2
 `
 
 type GetCollectionsParams struct {
-	Offset int32
-	Limit  int32
+	Offset int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
 }
 
 func (q *Queries) GetCollections(ctx context.Context, arg GetCollectionsParams) ([]Collection, error) {
@@ -44,7 +44,7 @@ func (q *Queries) GetCollections(ctx context.Context, arg GetCollectionsParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Collection
+	items := []Collection{}
 	for rows.Next() {
 		var i Collection
 		if err := rows.Scan(&i.ID, &i.Name, &i.OwnerID); err != nil {
