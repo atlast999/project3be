@@ -20,8 +20,8 @@ jobs:
 
     - name: Test
       run: go test -v -cover ./test/
-  build:
-    runs-on: pj3_be_server
+  deploy:
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
 
