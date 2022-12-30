@@ -33,12 +33,8 @@ func CreateWebApp(userId int, params db.CreateWebAppParams, txInstance *transact
 	return webApp, txErr
 }
 
-func GetMyList(userID int, queries *db.Queries) ([]db.WebApp, error) {
-	return queries.GetMyList(context.Background(), db.GetMyListParams{
-		UserID: int32(userID),
-		Offset: 0,
-		Limit:  10,
-	})
+func GetMyList(params db.GetMyListParams, txInstance *transaction.TxInstance) ([]db.WebApp, error) {
+	return txInstance.Queries.GetMyList(context.Background(), params)
 }
 
 func ShareMyList(userID int, collectionName string, dbInstance *sql.DB) (db.Collection, error) {

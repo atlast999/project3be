@@ -6,6 +6,7 @@ import (
 
 	"github.com/atlast999/project3be/api"
 	"github.com/atlast999/project3be/db/transaction"
+	"github.com/atlast999/project3be/helper"
 	_ "github.com/lib/pq"
 )
 
@@ -15,14 +16,18 @@ const (
 )
 
 func main() {
-	dbInstance, err := sql.Open(dbDriver, dbSource)
+	config, err := helper.LoadConfig(".")
 	if err != nil {
-		log.Fatal("Cannot connect to database")
+		log.Fatal("Cannot load configuration: ", err)
+	}
+	dbInstance, err := sql.Open(config.DBDriver, config.DBSource)
+	if err != nil {
+		log.Fatal("Cannot connect to database: ", err)
 	}
 	txInstance := transaction.NewTxInstance(dbInstance)
 	server := api.NewServer(txInstance)
 	err = server.StartServer()
 	if err != nil {
-		log.Fatal("Cannot start server")
+		log.Fatal("Cannot start server: ", err)
 	}
 }
