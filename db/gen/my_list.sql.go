@@ -15,8 +15,8 @@ VALUES ($1, $2)
 `
 
 type AddMyListParams struct {
-	UserID int32
-	AppID  int32
+	UserID int32 `json:"user_id"`
+	AppID  int32 `json:"app_id"`
 }
 
 func (q *Queries) AddMyList(ctx context.Context, arg AddMyListParams) error {
@@ -33,9 +33,9 @@ LIMIT $3
 `
 
 type GetMyListParams struct {
-	UserID int32
-	Offset int32
-	Limit  int32
+	UserID int32 `json:"user_id"`
+	Offset int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
 }
 
 func (q *Queries) GetMyList(ctx context.Context, arg GetMyListParams) ([]WebApp, error) {
@@ -44,7 +44,7 @@ func (q *Queries) GetMyList(ctx context.Context, arg GetMyListParams) ([]WebApp,
 		return nil, err
 	}
 	defer rows.Close()
-	var items []WebApp
+	items := []WebApp{}
 	for rows.Next() {
 		var i WebApp
 		if err := rows.Scan(

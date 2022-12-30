@@ -15,7 +15,7 @@ CREATE TABLE "web_apps" (
   "name" varchar NOT NULL,
   "url" varchar NOT NULL,
   "image" varchar NOT NULL,
-  "collection_id" int
+  "collection_id" int NOT NULL DEFAULT 0
 );
 
 CREATE TABLE "my_lists" (
