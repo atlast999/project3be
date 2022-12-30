@@ -12,8 +12,8 @@ func CreateUser(params db.CreateUserParams, txInstance *transaction.TxInstance) 
 	return txInstance.Queries.CreateUser(context.Background(), params)
 }
 
-func GetUser(params db.GetUserParams, txInstance *transaction.TxInstance) (db.User, error) {
-	return txInstance.Queries.GetUser(context.Background(), params)
+func GetUser(username string, txInstance *transaction.TxInstance) (db.User, error) {
+	return txInstance.Queries.GetUser(context.Background(), username)
 }
 
 func CreateWebApp(userId int, params db.CreateWebAppParams, txInstance *transaction.TxInstance) (db.WebApp, error) {

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	db "github.com/atlast999/project3be/db/gen"
+	"github.com/atlast999/project3be/helper"
 	"github.com/atlast999/project3be/repository"
 	"github.com/gin-gonic/gin"
 )
@@ -24,9 +25,14 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	hashedPassword, err := helper.GeneratePassword(request.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	user, err := repository.CreateUser(db.CreateUserParams{
 		Username: request.UserName,
-		Password: request.Password,
+		Password: hashedPassword,
 	}, server.txInstance)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -44,13 +50,14 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	user, err := repository.GetUser(db.GetUserParams{
-		Username: request.UserName,
-		Password: request.Password,
-	}, server.txInstance)
+	user, err := repository.GetUser(request.UserName, server.txInstance)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+	err = helper.CheckPassword(request.Password, user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 	}
 	ctx.JSON(http.StatusOK, dataResponse(UserResponse{
 		ID:       int(user.ID),

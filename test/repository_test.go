@@ -28,13 +28,21 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	user := createRandomUser(t)
-	foundUser, err := repository.GetUser(db.GetUserParams{
-		Username: user.Username,
-		Password: user.Password,
+	username := helper.RandString(6)
+	password := helper.RandString(8)
+	hashed, err := helper.GeneratePassword(password)
+	require.NoError(t, err)
+	user, err := repository.CreateUser(db.CreateUserParams{
+		Username: username,
+		Password: hashed,
 	}, txInstance)
 	require.NoError(t, err)
+	require.NotEmpty(t, user)
+	foundUser, err := repository.GetUser(user.Username, txInstance)
+	require.NoError(t, err)
 	require.NotEmpty(t, foundUser)
+	err = helper.CheckPassword(password, foundUser.Password)
+	require.NoError(t, err)
 	require.Equal(t, user.ID, foundUser.ID)
 }
 
@@ -53,7 +61,7 @@ func TestCreateWebApp(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, webApp)
 	require.Equal(t, params.Name, webApp.Name)
-	require.False(t, webApp.CollectionID.Valid)
+	require.Equal(t, webApp.CollectionID, 0)
 }
 
 func TestGetMyList(t *testing.T) {

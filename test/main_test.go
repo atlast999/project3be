@@ -12,9 +12,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const dbDriver = "postgres"
-const dbSource = "postgres://postgres:12345678@project-db.cnoos3wsb1s6.ap-northeast-1.rds.amazonaws.com/appdb"
-
 var dbQueries *db.Queries
 var dbInstance *sql.DB
 var txInstance *transaction.TxInstance

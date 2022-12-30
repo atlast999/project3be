@@ -32,3 +32,4 @@ func (server *Server) createWebApp(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, dataResponse(webApp))
 }
+
