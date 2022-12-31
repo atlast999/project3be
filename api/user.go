@@ -15,8 +15,20 @@ type UserRequest struct {
 }
 
 type UserResponse struct {
-	ID       int    `json:"id"`
+	ID       int32  `json:"id"`
 	UserName string `json:"username"`
+}
+
+func newUserResponse(user db.User) UserResponse {
+	return UserResponse{
+		ID:       user.ID,
+		UserName: user.Username,
+	}
+}
+
+type AuthenticationResponse struct {
+	User  UserResponse `json:"user"`
+	Token string       `josn:"token"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -38,9 +50,13 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, dataResponse(UserResponse{
-		ID:       int(user.ID),
-		UserName: request.UserName,
+	token, err := server.tokenMaker.CreateToken(user.ID, request.UserName, server.config.TokenExpiredDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+	ctx.JSON(http.StatusOK, dataResponse(AuthenticationResponse{
+		User:  newUserResponse(user),
+		Token: token,
 	}))
 }
 
@@ -57,10 +73,14 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 	err = helper.CheckPassword(request.Password, user.Password)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 	}
-	ctx.JSON(http.StatusOK, dataResponse(UserResponse{
-		ID:       int(user.ID),
-		UserName: request.UserName,
+	token, err := server.tokenMaker.CreateToken(user.ID, request.UserName, server.config.TokenExpiredDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+	ctx.JSON(http.StatusOK, dataResponse(AuthenticationResponse{
+		User:  newUserResponse(user),
+		Token: token,
 	}))
 }

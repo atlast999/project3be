@@ -19,7 +19,7 @@ func NewPasetoMaker(secretKey string) (TokenMaker, error) {
 	}, err
 }
 
-func (maker *PasetoMaker) CreateToken(userID int, username string, duration time.Duration) (string, error) {
+func (maker *PasetoMaker) CreateToken(userID int32, username string, duration time.Duration) (string, error) {
 	payload := NewPayload(userID, username, duration)
 	return maker.Paseto.Encrypt([]byte(maker.SecretKey), payload, nil)
 }

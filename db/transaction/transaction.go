@@ -25,7 +25,7 @@ func (txInstance *TxInstance) ExecTransaction(ctx context.Context, txBlock func(
 		return err
 	}
 	defer tx.Rollback()
-	err = txBlock(txInstance.Queries)
+	err = txBlock(txInstance.Queries.WithTx(tx))
 	if err != nil {
 		return err
 	}

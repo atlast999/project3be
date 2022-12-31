@@ -11,7 +11,7 @@ var (
 )
 
 type Payload struct {
-	UserID    int       `json:"id"`
+	UserID    int32       `json:"id"`
 	Username  string    `json:"username"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
@@ -23,7 +23,7 @@ func (payload *Payload) Valid() error {
 	return nil
 }
 
-func NewPayload(userId int, username string, duration time.Duration) *Payload {
+func NewPayload(userId int32, username string, duration time.Duration) *Payload {
 	return &Payload{
 		UserID:    userId,
 		Username:  username,
@@ -32,6 +32,6 @@ func NewPayload(userId int, username string, duration time.Duration) *Payload {
 }
 
 type TokenMaker interface {
-	CreateToken(userID int, username string, duration time.Duration) (string, error)
+	CreateToken(userID int32, username string, duration time.Duration) (string, error)
 	VerifyToken(token string) (*Payload, error)
 }

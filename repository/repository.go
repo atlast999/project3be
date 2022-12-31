@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	db "github.com/atlast999/project3be/db/gen"
 	"github.com/atlast999/project3be/db/transaction"
@@ -16,7 +15,7 @@ func GetUser(username string, txInstance *transaction.TxInstance) (db.User, erro
 	return txInstance.Queries.GetUser(context.Background(), username)
 }
 
-func CreateWebApp(userId int, params db.CreateWebAppParams, txInstance *transaction.TxInstance) (db.WebApp, error) {
+func CreateWebApp(userId int32, params db.CreateWebAppParams, txInstance *transaction.TxInstance) (db.WebApp, error) {
 	var webApp db.WebApp
 	txErr := txInstance.ExecTransaction(context.Background(), func(queries *db.Queries) error {
 		var err error
@@ -25,7 +24,7 @@ func CreateWebApp(userId int, params db.CreateWebAppParams, txInstance *transact
 			return err
 		}
 		err = queries.AddMyList(context.Background(), db.AddMyListParams{
-			UserID: int32(userId),
+			UserID: userId,
 			AppID:  webApp.ID,
 		})
 		return err
@@ -37,20 +36,19 @@ func GetMyList(params db.GetMyListParams, txInstance *transaction.TxInstance) ([
 	return txInstance.Queries.GetMyList(context.Background(), params)
 }
 
-func ShareMyList(userID int, collectionName string, dbInstance *sql.DB) (db.Collection, error) {
-	txInstance := transaction.NewTxInstance(dbInstance)
+func ShareMyList(userID int32, collectionName string, txInstance *transaction.TxInstance) (db.Collection, error) {
 	var collection db.Collection
 	txErr := txInstance.ExecTransaction(context.Background(), func(queries *db.Queries) error {
 		var err error
 		collection, err = queries.CreateCollection(context.Background(), db.CreateCollectionParams{
 			Name:    collectionName,
-			OwnerID: int32(userID),
+			OwnerID: userID,
 		})
 		if err != nil {
 			return err
 		}
 		err = queries.AddToCollection(context.Background(), db.AddToCollectionParams{
-			UserID:       int32(userID),
+			UserID:       userID,
 			CollectionID: collection.ID,
 		})
 		return err
@@ -58,31 +56,23 @@ func ShareMyList(userID int, collectionName string, dbInstance *sql.DB) (db.Coll
 	return collection, txErr
 }
 
-func GetCollections(queries *db.Queries) ([]db.Collection, error) {
-	return queries.GetCollections(context.Background(), db.GetCollectionsParams{
-		Offset: 0,
-		Limit:  10,
-	})
+func GetCollections(params db.GetCollectionsParams, txInstance *transaction.TxInstance) ([]db.Collection, error) {
+	return txInstance.Queries.GetCollections(context.Background(), params)
 }
 
-func GetCollectionDetail(collectionId int, queries *db.Queries) ([]db.WebApp, error) {
-	return queries.GetByCollection(context.Background(), db.GetByCollectionParams{
-		CollectionID: int32(collectionId),
-		Offset:       0,
-		Limit:        10,
-	})
+func GetCollectionDetail(params db.GetByCollectionParams, txInstance *transaction.TxInstance) ([]db.WebApp, error) {
+	return txInstance.Queries.GetByCollection(context.Background(), params)
 }
 
-func TakeCollection(userId, collectionId int, dbInstance *sql.DB) error {
-	txInstance := transaction.NewTxInstance(dbInstance)
+func TakeCollection(userId, collectionId int32, txInstance *transaction.TxInstance) error {
 	return txInstance.ExecTransaction(context.Background(), func(queries *db.Queries) error {
-		err := queries.RemoveMyList(context.Background(), int32(userId))
+		err := queries.RemoveMyList(context.Background(), userId)
 		if err != nil {
 			return err
 		}
 		return queries.TakeCollection(context.Background(), db.TakeCollectionParams{
-			UserID:       int32(userId),
-			CollectionID: int32(collectionId),
+			UserID:       userId,
+			CollectionID: collectionId,
 		})
 	})
 }
