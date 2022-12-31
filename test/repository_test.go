@@ -28,13 +28,21 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	user := createRandomUser(t)
-	foundUser, err := repository.GetUser(db.GetUserParams{
-		Username: user.Username,
-		Password: user.Password,
+	username := helper.RandString(6)
+	password := helper.RandString(8)
+	hashed, err := helper.GeneratePassword(password)
+	require.NoError(t, err)
+	user, err := repository.CreateUser(db.CreateUserParams{
+		Username: username,
+		Password: hashed,
 	}, txInstance)
 	require.NoError(t, err)
+	require.NotEmpty(t, user)
+	foundUser, err := repository.GetUser(user.Username, txInstance)
+	require.NoError(t, err)
 	require.NotEmpty(t, foundUser)
+	err = helper.CheckPassword(password, foundUser.Password)
+	require.NoError(t, err)
 	require.Equal(t, user.ID, foundUser.ID)
 }
 
@@ -49,11 +57,11 @@ func createRandomWebAppParams() db.CreateWebAppParams {
 func TestCreateWebApp(t *testing.T) {
 	user := createRandomUser(t)
 	params := createRandomWebAppParams()
-	webApp, err := repository.CreateWebApp(int(user.ID), params, txInstance)
+	webApp, err := repository.CreateWebApp(user.ID, params, txInstance)
 	require.NoError(t, err)
 	require.NotEmpty(t, webApp)
 	require.Equal(t, params.Name, webApp.Name)
-	require.False(t, webApp.CollectionID.Valid)
+	require.Equal(t, webApp.CollectionID.Valid, false)
 }
 
 func TestGetMyList(t *testing.T) {
@@ -61,7 +69,7 @@ func TestGetMyList(t *testing.T) {
 	size := 5
 	for i := 0; i < size; i++ {
 		params := createRandomWebAppParams()
-		repository.CreateWebApp(int(user.ID), params, txInstance)
+		repository.CreateWebApp(user.ID, params, txInstance)
 	}
 	webApps, err := repository.GetMyList(db.GetMyListParams{
 		UserID: user.ID,
@@ -77,10 +85,10 @@ func TestShareMyList(t *testing.T) {
 	size := 5
 	for i := 0; i < size; i++ {
 		params := createRandomWebAppParams()
-		repository.CreateWebApp(int(user.ID), params, txInstance)
+		repository.CreateWebApp(user.ID, params, txInstance)
 	}
 	var collectionName = helper.RandString(6)
-	collection, err := repository.ShareMyList(int(user.ID), collectionName, dbInstance)
+	collection, err := repository.ShareMyList(user.ID, collectionName, txInstance)
 	require.NoError(t, err)
 	require.NotEmpty(t, collection)
 	require.Equal(t, collectionName, collection.Name)
@@ -90,10 +98,13 @@ func TestShareMyList(t *testing.T) {
 func TestGetCollections(t *testing.T) {
 	user := createRandomUser(t)
 	params := createRandomWebAppParams()
-	repository.CreateWebApp(int(user.ID), params, txInstance)
+	repository.CreateWebApp(user.ID, params, txInstance)
 	var collectionName = helper.RandString(6)
-	repository.ShareMyList(int(user.ID), collectionName, dbInstance)
-	collections, err := repository.GetCollections(dbQueries)
+	repository.ShareMyList(user.ID, collectionName, txInstance)
+	collections, err := repository.GetCollections(db.GetCollectionsParams{
+		Offset: 0,
+		Limit: 5,
+	}, txInstance)
 	require.NoError(t, err)
 	require.NotEmpty(t, collections)
 }
@@ -103,11 +114,15 @@ func TestGetCollectionDetail(t *testing.T) {
 	size := 5
 	for i := 0; i < size; i++ {
 		params := createRandomWebAppParams()
-		repository.CreateWebApp(int(user.ID), params, txInstance)
+		repository.CreateWebApp(user.ID, params, txInstance)
 	}
 	var collectionName = helper.RandString(6)
-	collection, _ := repository.ShareMyList(int(user.ID), collectionName, dbInstance)
-	webApps, err := repository.GetCollectionDetail(int(collection.ID), dbQueries)
+	collection, _ := repository.ShareMyList(user.ID, collectionName, txInstance)
+	webApps, err := repository.GetCollectionDetail(db.GetByCollectionParams{
+		Offset: 0,
+		Limit: 5,
+		CollectionID: collection.ID,
+	}, txInstance)
 	require.NoError(t, err)
 	require.Equal(t, len(webApps), size)
 }
@@ -117,17 +132,17 @@ func TestTakeCollection(t *testing.T) {
 	size := 5
 	for i := 0; i < size; i++ {
 		params := createRandomWebAppParams()
-		repository.CreateWebApp(int(sharingUser.ID), params, txInstance)
+		repository.CreateWebApp(sharingUser.ID, params, txInstance)
 	}
 	var collectionName = helper.RandString(6)
-	collection, _ := repository.ShareMyList(int(sharingUser.ID), collectionName, dbInstance)
+	collection, _ := repository.ShareMyList(sharingUser.ID, collectionName, txInstance)
 	sharedApps, _ := repository.GetMyList(db.GetMyListParams{
 		UserID: sharingUser.ID,
 		Offset: 0,
 		Limit:  5,
 	}, txInstance)
 	takingUser := createRandomUser(t)
-	err := repository.TakeCollection(int(takingUser.ID), int(collection.ID), dbInstance)
+	err := repository.TakeCollection(takingUser.ID, collection.ID, txInstance)
 	takenApps, _ := repository.GetMyList(db.GetMyListParams{
 		UserID: takingUser.ID,
 		Offset: 0,

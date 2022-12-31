@@ -29,8 +29,8 @@ Table "web_apps" {
 }
 
 Table "my_lists" {
-  "user_id" int [ref: > users.id]
-  "app_id" int [ref: - web_apps.id]
+  "user_id" int [pk, ref: > users.id]
+  "app_id" int [pk, ref: - web_apps.id]
 
   Indexes {
     user_id

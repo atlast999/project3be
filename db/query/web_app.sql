@@ -4,8 +4,8 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: AddToCollection :exec
-UPDATE web_apps
-SET collection_id = @collection_id::int
+INSERT INTO web_apps (name, url, image, collection_id)
+SELECT name, url, image, @collection_id::int FROM web_apps
 WHERE id IN (SELECT app_id FROM my_lists WHERE user_id = $1);
 
 -- name: GetByCollection :many

@@ -4,7 +4,9 @@
 
 package db
 
-import ()
+import (
+	"database/sql"
+)
 
 type Collection struct {
 	ID      int32  `json:"id"`
@@ -24,9 +26,9 @@ type User struct {
 }
 
 type WebApp struct {
-	ID           int32  `json:"id"`
-	Name         string `json:"name"`
-	Url          string `json:"url"`
-	Image        string `json:"image"`
-	CollectionID int32  `json:"collection_id"`
+	ID           int32         `json:"id"`
+	Name         string        `json:"name"`
+	Url          string        `json:"url"`
+	Image        string        `json:"image"`
+	CollectionID sql.NullInt32 `json:"collection_id"`
 }

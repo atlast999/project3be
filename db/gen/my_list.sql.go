@@ -68,8 +68,15 @@ func (q *Queries) GetMyList(ctx context.Context, arg GetMyListParams) ([]WebApp,
 }
 
 const removeMyList = `-- name: RemoveMyList :exec
-DELETE FROM my_lists
-WHERE user_id = $1
+WITH deleted_app_ids AS (
+    DELETE FROM my_lists
+    WHERE user_id = $1
+    RETURNING app_id
+)
+DELETE FROM web_apps
+WHERE id IN (
+    SELECT app_id FROM deleted_app_ids
+)
 `
 
 func (q *Queries) RemoveMyList(ctx context.Context, userID int32) error {

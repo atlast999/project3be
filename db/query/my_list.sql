@@ -10,5 +10,12 @@ INSERT INTO my_lists (user_id, app_id)
 VALUES ($1, $2);
 
 -- name: RemoveMyList :exec
-DELETE FROM my_lists
-WHERE user_id = $1;
+WITH deleted_app_ids AS (
+    DELETE FROM my_lists
+    WHERE user_id = $1
+    RETURNING app_id
+)
+DELETE FROM web_apps
+WHERE id IN (
+    SELECT app_id FROM deleted_app_ids
+);

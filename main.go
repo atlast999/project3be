@@ -10,11 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgres://postgres:12345678@project-db.cnoos3wsb1s6.ap-northeast-1.rds.amazonaws.com/appdb"
-)
-
 func main() {
 	config, err := helper.LoadConfig(".")
 	if err != nil {
@@ -25,7 +20,10 @@ func main() {
 		log.Fatal("Cannot connect to database: ", err)
 	}
 	txInstance := transaction.NewTxInstance(dbInstance)
-	server := api.NewServer(txInstance)
+	server, err := api.NewServer(config, txInstance)
+	if err != nil {
+		log.Fatal("Cannot initiate server: ", err)
+	}
 	err = server.StartServer()
 	if err != nil {
 		log.Fatal("Cannot start server: ", err)
