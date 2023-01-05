@@ -12,7 +12,7 @@ import (
 type CreateWebAppRequest struct {
 	Name  string `json:"name" binding:"required"`
 	Url   string `json:"url" binding:"required"`
-	Image string `json:"image" binding:"required"`
+	Image string `json:"image"`
 }
 
 type WebAppResponse struct {
