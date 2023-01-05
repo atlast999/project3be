@@ -28,7 +28,7 @@ func newUserResponse(user db.User) UserResponse {
 
 type AuthenticationResponse struct {
 	User  UserResponse `json:"user"`
-	Token string       `josn:"token"`
+	Token string       `json:"token"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -74,10 +74,12 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	err = helper.CheckPassword(request.Password, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
 	}
 	token, err := server.tokenMaker.CreateToken(user.ID, request.UserName, server.config.TokenExpiredDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 	ctx.JSON(http.StatusOK, dataResponse(AuthenticationResponse{
 		User:  newUserResponse(user),
