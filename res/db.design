@@ -2,7 +2,7 @@
 
 Table "users" {
   "id" INT [pk, increment]
-  "username" varchar [not null]
+  "username" varchar [not null, unique]
   "password" varchar [not null]
 }
 
